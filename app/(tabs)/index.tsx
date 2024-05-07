@@ -24,6 +24,10 @@ import {
 import * as React from "react";
 import { useState } from "react";
 import Styled from "styled-components/native";
+import {
+  widthPercentageToDP as wp,
+  heightPercentageToDP as hp,
+} from "react-native-responsive-screen";
 
 import { Text, View } from "@/components/Themed";
 import haley from "@/assets/images/1170.jpg";
@@ -154,6 +158,7 @@ export default function TabOneScreen() {
         gap: 15,
         display: "flex",
         alignItems: "center",
+        width: wp("100%"),
       }}
       refreshControl={
         <RefreshControl refreshing={refreshing} onRefresh={onRefresh} />
@@ -161,7 +166,9 @@ export default function TabOneScreen() {
     >
       <Text>Drag down to see RefreshControl indicator (RefreshControl)</Text>
       <Text style={styles.header}>Standard Components</Text>
-      <Text>P (Text)</Text>
+      <StyledView>
+        <StyledText>P (Text)</StyledText>
+      </StyledView>
       <StyledView>
         <StyledText>DIV (View)</StyledText>
       </StyledView>
@@ -204,7 +211,7 @@ export default function TabOneScreen() {
       </StyledView>
       <StyledTextInput placeholder="INPUT (TextInput)" />
       <Button
-        title="BUTTON (Button)"
+        title="BUTTON (Button) & Alert"
         onPress={() => Alert.alert("Simple Button pressed")}
       />
       <StyledView>
@@ -212,10 +219,16 @@ export default function TabOneScreen() {
           onPress={() => {
             setTimesPressed((current) => current + 1);
           }}
-          style={{ padding: 10, backgroundColor: "blue" }}
+          style={{
+            padding: 10,
+            backgroundColor: "blue",
+            width: wp("50%"),
+          }}
         >
           {({ pressed }) => (
-            <StyledText>{pressed ? "Pressed!" : "Press Me"}</StyledText>
+            <StyledText style={{ textAlign: "center" }}>
+              {pressed ? "Pressed!" : "Press Me"}
+            </StyledText>
           )}
         </Pressable>
         <View>
@@ -284,9 +297,13 @@ export default function TabOneScreen() {
         />
       </StyledView>
       <StyledView>
-        <ImageBackground source={haley} resizeMode="cover">
-          <StyledText>BACKGROUND-IMAGE (ImageBackground)</StyledText>
-        </ImageBackground>
+        <StyledText>BACKGROUND-IMAGE (ImageBackground)</StyledText>
+
+        <ImageBackground
+          source={haley}
+          resizeMode="cover"
+          style={{ width: wp(70), height: hp(10) }}
+        ></ImageBackground>
       </StyledView>
       <StyledView>
         <KeyboardAvoidingView
@@ -350,6 +367,8 @@ const StyledView = Styled.View`
   background-color: red;
   padding: 10px;
   border-radius: 5px;
+  width: ${wp("80%")};
+
 `;
 
 const StyledText = Styled.Text`
@@ -358,12 +377,13 @@ const StyledText = Styled.Text`
   `;
 
 const StyledImage = Styled.Image`
-  width: 100px;
-  height: 100px;
+height: ${hp("20%")};
+width: ${wp("80%")};
   `;
 
 const StyledFlatList = Styled.FlatList`
-  max-height: 80px;
+max-height: ${hp("20%")};
+width: ${wp("80%")};
   background-color: white;
   padding: 10px;
   margin-top: 10px;
@@ -372,25 +392,34 @@ const StyledFlatList = Styled.FlatList`
 const StyledTextInput = Styled.TextInput`
   border: 1px solid black;
   padding: 5px 10px;
+width: ${wp("80%")};
   `;
 
 const StyledTouchableOpacity = Styled.TouchableOpacity`
   background-color: blue;
   padding: 10px;
   border-radius: 5px;
+
+width: ${wp("80%")};
   `;
 
 const StyledTouchableHighlight = Styled.TouchableHighlight`
   borderRadius: 5px;
   padding: 10px;
   background-color: blue;
+  width: ${wp("80%")};
+
 `;
 
 const StyledSectionList = Styled.SectionList`
-  max-height: 180px;`;
+  max-height: 180px;
+  width: ${wp("80%")};
+`;
 
 const StyledVirtualizedList = Styled.VirtualizedList`
   max-height: 110px;
+  width: ${wp("80%")};
+
   background-color: white;
   padding: 10px;
   margin-top: 10px;
@@ -410,6 +439,7 @@ const styles = StyleSheet.create({
     padding: 35,
     alignItems: "center",
     shadowColor: "#000",
+    width: wp("90%"),
     shadowOffset: {
       width: 0,
       height: 2,
@@ -422,6 +452,7 @@ const styles = StyleSheet.create({
     borderRadius: 20,
     padding: 10,
     elevation: 2,
+    width: wp("80%"),
   },
   buttonOpen: {
     backgroundColor: "#F194FF",

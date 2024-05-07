@@ -1,11 +1,20 @@
 import React from "react";
 import FontAwesome from "@expo/vector-icons/FontAwesome";
 import { Link, Tabs } from "expo-router";
-import { Pressable } from "react-native";
+import { Pressable, Image } from "react-native";
 
 import Colors from "@/constants/Colors";
 import { useColorScheme } from "@/components/useColorScheme";
 import { useClientOnlyValue } from "@/components/useClientOnlyValue";
+import expoIcon from "@/assets/images/favicon.png";
+import reactIcon from "@/assets/images/react.png";
+import frameIcon from "@/assets/images/frame.png";
+import styled from "styled-components/native";
+
+const StyledImage = styled(Image)`
+  max-width: 25px;
+  object-fit: contain;
+`;
 
 // You can explore the built-in icon families and icons on the web at https://icons.expo.fyi/
 function TabBarIcon(props: {
@@ -30,8 +39,8 @@ export default function TabLayout() {
       <Tabs.Screen
         name="index"
         options={{
-          title: "Tab One",
-          tabBarIcon: ({ color }) => <TabBarIcon name="code" color={color} />,
+          title: "Core Components",
+          tabBarIcon: ({ color }) => <StyledImage source={reactIcon} />,
           headerRight: () => (
             <Link href="/modal" asChild>
               <Pressable>
@@ -51,15 +60,15 @@ export default function TabLayout() {
       <Tabs.Screen
         name="two"
         options={{
-          title: "Tab Two",
-          tabBarIcon: ({ color }) => <TabBarIcon name="code" color={color} />,
+          title: "UI Framework",
+          tabBarIcon: ({ color }) => <StyledImage source={frameIcon} />,
         }}
       />
       <Tabs.Screen
         name="three"
         options={{
-          title: "Tab Three",
-          tabBarIcon: ({ color }) => <TabBarIcon name="code" color={color} />,
+          title: "Expo Libraries",
+          tabBarIcon: ({ color }) => <StyledImage source={expoIcon} />,
         }}
       />
     </Tabs>
