@@ -9,7 +9,6 @@ import {
   Button,
   TouchableOpacity,
   Platform,
-  PixelRatio,
 } from "react-native";
 import { Accelerometer, Barometer } from "expo-sensors";
 import { Audio } from "expo-av";
@@ -17,10 +16,11 @@ import * as Permissions from "expo-permissions";
 import { useBatteryLevel } from "expo-battery";
 import * as Brightness from "expo-brightness";
 import * as Calendar from "expo-calendar";
-import { CameraView, useCameraPermissions } from "expo-camera/next";
 import * as Clipboard from "expo-clipboard";
 import * as Contacts from "expo-contacts";
 import * as Crypto from "expo-crypto";
+import { Camera, CameraView, useCameraPermissions } from "expo-camera";
+import DateTimePicker from "@react-native-community/datetimepicker";
 
 import styled from "styled-components/native";
 import {
@@ -246,6 +246,7 @@ export default function TabTwoScreen() {
   // CAMERA
   const [facing, setFacing] = useState("back");
   const [CameraPermission, requestCameraPermission] = useCameraPermissions();
+  const [showCamera, setShowCamera] = useState(false);
 
   if (!CameraPermission) {
     // Camera permissions are still loading
@@ -269,7 +270,10 @@ export default function TabTwoScreen() {
   }
 
   return (
-    <StyledScrollView contentContainerStyle={{ alignItems: "center" }}>
+    <ScrollView
+      style={styles.scrollView}
+      contentContainerStyle={{ alignItems: "center" }}
+    >
       <View style={styles.view}>
         <Text style={styles.title}>Accelerometer:</Text>
         <Text>Speed: {speed.toFixed(2)} km/h</Text>
@@ -332,27 +336,73 @@ export default function TabTwoScreen() {
         <Button title="Create a new calendar" onPress={createCalendar} />
       </View>
       <View style={styles.view}>
-        <CameraView style={styles.camera} facing={facing}>
-          <View>
-            <TouchableOpacity
-              style={styles.button}
-              onPress={toggleCameraFacing}
-            >
-              <Text>Flip Camera</Text>
-            </TouchableOpacity>
-          </View>
-        </CameraView>
+        <TouchableOpacity onPress={() => setShowCamera(!showCamera)}>
+          <Text style={styles.button}>
+            {" "}
+            {showCamera ? "Hide Camera" : "Show Camera"}
+          </Text>
+        </TouchableOpacity>
       </View>
+      {showCamera && (
+        <View style={styles.view}>
+          <Text style={styles.title}>Camera:</Text>
+          <CameraView style={styles.camera} facing={facing}>
+            <View>
+              <TouchableOpacity
+                style={styles.button}
+                onPress={toggleCameraFacing}
+              >
+                <Text>Flip Camera</Text>
+              </TouchableOpacity>
+            </View>
+          </CameraView>
+        </View>
+      )}
       <ClipBoard />
       <View style={styles.view}>
         <Button onPress={contacts} title="Get Contacts (Console Log)" />
       </View>
       <CryptoComponent />
-    </StyledScrollView>
+      <View style={styles.view}>
+        <DateTimePickerComponent />
+      </View>
+    </ScrollView>
   );
 }
+// DATE TIME PICKER
+const DateTimePickerComponent = () => {
+  const [date, setDate] = useState(new Date()); // Initialize with the current date
+  const [showPicker, setShowPicker] = useState(false);
+  const [datePicked, setDatePicked] = useState("");
 
-// CRYPTO
+  const handleDateChange = ({ type }, selectedDate) => {
+    if (type === "set") {
+      setShowPicker(false);
+      const currentDate = selectedDate || date;
+      setDate(currentDate);
+      setDatePicked(currentDate.toString());
+    } else {
+      setShowPicker(false);
+    }
+  };
+
+  return (
+    <>
+      <Button title="Show Date Picker" onPress={() => setShowPicker(true)} />
+      {showPicker && (
+        <DateTimePicker
+          mode="date"
+          display="spinner"
+          value={date}
+          onChange={handleDateChange}
+        />
+      )}
+      <Text>{datePicked}</Text>
+    </>
+  );
+};
+
+// CRYPTO (HASHING)
 const CryptoComponent = () => {
   const [password, setPassword] = useState("");
   const [hashedPassword, setHashedPassword] = useState("");
@@ -468,14 +518,14 @@ async function createCalendar() {
   console.log(`Your new calendar ID is: ${newCalendarID}`);
 }
 
-const StyledScrollView = styled(ScrollView)`
-  display: flex;
-  flex-direction: column;
-  width: ${wp("80%")};
-  align-self: center;
-`;
-
 const styles = StyleSheet.create({
+  scrollView: {
+    display: "flex",
+    flexDirection: "column",
+    width: wp("80%"),
+    alignSelf: "center",
+  },
+
   title: {
     fontSize: 20,
     fontWeight: "bold",
