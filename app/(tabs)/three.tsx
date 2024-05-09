@@ -10,7 +10,7 @@ import {
   TouchableOpacity,
   Platform,
 } from "react-native";
-import { Accelerometer, Barometer } from "expo-sensors";
+import { Accelerometer, Barometer, LightSensor, Pedometer } from "expo-sensors";
 import { Audio } from "expo-av";
 import * as Permissions from "expo-permissions";
 import { useBatteryLevel } from "expo-battery";
@@ -21,6 +21,15 @@ import * as Contacts from "expo-contacts";
 import * as Crypto from "expo-crypto";
 import { Camera, CameraView, useCameraPermissions } from "expo-camera";
 import DateTimePicker from "@react-native-community/datetimepicker";
+import * as Haptics from "expo-haptics";
+import * as ImagePicker from "expo-image-picker";
+import { LinearGradient } from "expo-linear-gradient";
+import * as Location from "expo-location";
+import MapView from "react-native-maps";
+import * as Speech from "expo-speech";
+import * as WebBrowser from "expo-web-browser";
+import { WebView } from "react-native-webview";
+import PagerView from "react-native-pager-view";
 
 import styled from "styled-components/native";
 import {
@@ -31,6 +40,7 @@ import AsyncStorage from "@react-native-async-storage/async-storage";
 
 export default function TabTwoScreen() {
   // ACCELEROMETER
+  const [showAccelerometer, setShowAccelerometer] = useState(false);
   const [{ x, y, z }, setData] = useState({
     x: 0,
     y: 0,
@@ -170,6 +180,7 @@ export default function TabTwoScreen() {
   }, [sound]);
 
   // BAROMETER
+  const [showBarometer, setShowBarometer] = useState(false);
   const [{ pressure, relativeAltitude }, setPressure] = useState({
     pressure: 0,
     relativeAltitude: 0,
@@ -276,7 +287,15 @@ export default function TabTwoScreen() {
     >
       <View style={styles.view}>
         <Text style={styles.title}>Accelerometer:</Text>
-        <Text>Speed: {speed.toFixed(2)} km/h</Text>
+        <TouchableOpacity
+          onPress={() => setShowAccelerometer(!showAccelerometer)}
+        >
+          <Text style={styles.button}>
+            {" "}
+            {showAccelerometer ? "Hide Accelerometer" : "Show Accelerometer"}
+          </Text>
+        </TouchableOpacity>
+        {showAccelerometer && <Text>Speed: {speed.toFixed(2)} km/h</Text>}
       </View>
       <View style={styles.view}>
         <Text style={styles.title}>AsyncStorage:</Text>
@@ -309,13 +328,23 @@ export default function TabTwoScreen() {
       </View>
       <View style={styles.view}>
         <Text style={styles.title}>Barometer:</Text>
-        <Text>Pressure: {pressure.toFixed(2)} hPa</Text>
-        <Text>
-          Relative Altitude:{" "}
-          {Platform.OS === "ios"
-            ? `${relativeAltitude} m`
-            : `Only available on iOS`}
-        </Text>
+        <TouchableOpacity onPress={() => setShowBarometer(!showBarometer)}>
+          <Text style={styles.button}>
+            {" "}
+            {showBarometer ? "Hide Barometer" : "Show Barometer"}
+          </Text>
+        </TouchableOpacity>
+        {showBarometer && (
+          <>
+            <Text>Pressure: {pressure.toFixed(2)} hPa</Text>
+            <Text>
+              Relative Altitude:{" "}
+              {Platform.OS === "ios"
+                ? `${relativeAltitude} m`
+                : `Only available on iOS`}
+            </Text>
+          </>
+        )}
       </View>
       <View style={styles.view}>
         <Text style={styles.title}>Battery:</Text>
@@ -332,10 +361,11 @@ export default function TabTwoScreen() {
         </TouchableOpacity>
       </View>
       <View style={styles.view}>
-        <Text>Calendar Module (ConsoleLog)</Text>
+        <Text style={styles.title}>Calendar Module (ConsoleLog)</Text>
         <Button title="Create a new calendar" onPress={createCalendar} />
       </View>
       <View style={styles.view}>
+        <Text style={styles.title}>Camera:</Text>
         <TouchableOpacity onPress={() => setShowCamera(!showCamera)}>
           <Text style={styles.button}>
             {" "}
@@ -360,15 +390,364 @@ export default function TabTwoScreen() {
       )}
       <ClipBoard />
       <View style={styles.view}>
+        <Text style={styles.title}>Contacts:</Text>
         <Button onPress={contacts} title="Get Contacts (Console Log)" />
       </View>
       <CryptoComponent />
       <View style={styles.view}>
         <DateTimePickerComponent />
       </View>
+      <HapticsComponent />
+      <ImagePickerComponent />
+      <LightSensorComponent />
+      <LinearGradientComponent />
+      <LocationComponent />
+      <MapViewComponent />
+      <PedometerComponent />
+      <TextToSpeech />
+      <WebBrowserRedirectComponent />
+      <PagerViewComponent />
+      <WebViewComponent />
     </ScrollView>
   );
 }
+
+// PAGER VIEW
+const PagerViewComponent = () => {
+  return (
+    <View style={styles.view}>
+      <Text style={styles.title}>Pager View:</Text>
+      <PagerView style={styles.camera}>
+        <View key="1">
+          <Text>First page (Swipe Left)</Text>
+        </View>
+        <View key="2">
+          <Text>Second page (Swipe Left / Right)</Text>
+        </View>
+        <View key="3">
+          <Text>Third page (Swipe Right)</Text>
+        </View>
+      </PagerView>
+    </View>
+  );
+};
+
+// WEB VIEW
+const WebViewComponent = () => {
+  return (
+    <View style={styles.view}>
+      <Text style={styles.title}>Web View:</Text>
+      <WebView
+        source={{ uri: "https://expo.dev" }}
+        style={{
+          overflow: "scroll",
+          width: wp("80%"),
+          height: hp("30%"),
+          marginBottom: 20,
+        }}
+      />
+    </View>
+  );
+};
+
+// WEB BROWSER REDIRECT
+const WebBrowserRedirectComponent = () => {
+  const [result, setResult] = useState(null);
+
+  const _handlePressButtonAsync = async () => {
+    let result = await WebBrowser.openBrowserAsync("https://expo.dev");
+    setResult(result);
+  };
+  return (
+    <View style={styles.view}>
+      <Text style={styles.title}>WebBrowser Redirect:</Text>
+      <Button title="Open WebBrowser" onPress={_handlePressButtonAsync} />
+    </View>
+  );
+};
+
+// TEXT TO SPEECH
+const TextToSpeech = () => {
+  const [text, setText] = useState("");
+  const speak = () => {
+    Speech.speak(text);
+  };
+
+  return (
+    <View style={styles.view}>
+      <Text style={styles.title}>Text to Speech:</Text>
+      <TextInput
+        placeholder="Input text"
+        value={text}
+        onChangeText={(text) => setText(text)}
+      />
+      <Button title="Convert to speech" onPress={speak} />
+    </View>
+  );
+};
+
+// PEDOMETER
+const PedometerComponent = () => {
+  const [isPedometerAvailable, setIsPedometerAvailable] = useState("checking");
+  const [pastStepCount, setPastStepCount] = useState(0);
+  const [currentStepCount, setCurrentStepCount] = useState(0);
+
+  const subscribe = async () => {
+    const isAvailable = await Pedometer.isAvailableAsync();
+    setIsPedometerAvailable(String(isAvailable));
+
+    if (isAvailable) {
+      const end = new Date();
+      const start = new Date();
+      start.setDate(end.getDate() - 1);
+
+      const pastStepCountResult = await Pedometer.getStepCountAsync(start, end);
+      if (pastStepCountResult) {
+        setPastStepCount(pastStepCountResult.steps);
+      }
+
+      return Pedometer.watchStepCount((result) => {
+        setCurrentStepCount(result.steps);
+      });
+    }
+  };
+
+  useEffect(() => {
+    const subscription = subscribe();
+    // return () => subscription && subscription.remove();
+  }, []);
+
+  return (
+    <View style={styles.view}>
+      <Text style={styles.title}>Pedometer:</Text>
+      <Text>Steps taken in the last 24 hours: {pastStepCount}</Text>
+      <Text>Walk! And watch this go up: {currentStepCount}</Text>
+    </View>
+  );
+};
+
+// MAP VIEW
+const MapViewComponent = () => {
+  const [showMap, setShowMap] = useState(false);
+  return (
+    <View style={styles.view}>
+      <Text style={styles.title}>Map View:</Text>
+      <TouchableOpacity onPress={() => setShowMap(!showMap)}>
+        <Text style={styles.button}>
+          {" "}
+          {showMap ? "Hide Map View" : "Show Map View"}
+        </Text>
+      </TouchableOpacity>
+      {showMap && <MapView mapType="satellite" style={styles.camera} />}
+    </View>
+  );
+};
+
+// LINEAR GRADIENT
+const LinearGradientComponent = () => {
+  return (
+    <View style={styles.view}>
+      <Text style={styles.title}>Linear Gradient:</Text>
+      <LinearGradient
+        // Button Linear Gradient
+        colors={["#4c669f", "#3b5998", "#192f6a"]}
+        style={styles.button}
+      >
+        <Text style={{ color: "white" }}>Linear Gradient</Text>
+      </LinearGradient>
+    </View>
+  );
+};
+
+// LIGHT SENSOR
+const LightSensorComponent = () => {
+  const [{ illuminance }, setData] = useState({ illuminance: 0 });
+  const [isSubscribed, setIsSubscribed] = useState(false);
+
+  useEffect(() => {
+    if (isSubscribed) {
+      _subscribe();
+    } else {
+      _unsubscribe();
+    }
+
+    return () => {
+      _unsubscribe();
+    };
+  }, [isSubscribed]);
+
+  const _subscribe = () => {
+    LightSensor.setUpdateInterval(1000);
+    LightSensor.addListener((data) => {
+      setData(data);
+    });
+  };
+
+  const _unsubscribe = () => {
+    LightSensor.removeAllListeners();
+  };
+
+  const _toggle = () => {
+    setIsSubscribed(!isSubscribed);
+  };
+
+  const getLightStatus = () => {
+    const maxIlluminance = 1000; // Maximum illuminance value (lux)
+    const percentage = (illuminance / maxIlluminance) * 100;
+
+    if (percentage < 1) {
+      return "VERY DARK";
+    } else if (percentage >= 2 && percentage <= 10) {
+      return "DARK";
+    } else if (percentage > 10 && percentage <= 50) {
+      return "NORMAL";
+    } else if (percentage > 50 && percentage <= 80) {
+      return "BRIGHT";
+    } else {
+      return "VERY BRIGHT";
+    }
+  };
+
+  return (
+    <View style={styles.view}>
+      <Text style={styles.title}>Light Sensor:</Text>
+      <Text>
+        Illuminance:{" "}
+        {Platform.OS === "android"
+          ? `${illuminance} lx`
+          : `Only available on Android`}
+      </Text>
+      <Text>Light Status: {getLightStatus()}</Text>
+      <View style={styles.view}>
+        <TouchableOpacity onPress={_toggle} style={styles.button}>
+          <Text>{isSubscribed ? "Stop" : "Start"}</Text>
+        </TouchableOpacity>
+      </View>
+    </View>
+  );
+};
+
+// LOCATION
+const LocationComponent = () => {
+  const [location, setLocation] = useState(null);
+  const [errorMsg, setErrorMsg] = useState(null);
+
+  useEffect(() => {
+    (async () => {
+      let { status } = await Location.requestForegroundPermissionsAsync();
+      if (status !== "granted") {
+        setErrorMsg("Permission to access location was denied");
+        return;
+      }
+
+      let location = await Location.getCurrentPositionAsync({});
+      setLocation(location);
+    })();
+  }, []);
+
+  let text = "Waiting..";
+  if (errorMsg) {
+    text = errorMsg;
+  } else if (location) {
+    text = JSON.stringify(location);
+  }
+
+  return (
+    <View style={styles.view}>
+      <Text style={styles.title}>Location:</Text>
+      <Text>{text}</Text>
+    </View>
+  );
+};
+
+// HAPTICS (VIBRATION)
+const HapticsComponent = () => {
+  return (
+    <View style={styles.view}>
+      <Text style={styles.title}>Haptics (VIBRATION):</Text>
+      <Text>Haptics.selectionAsync</Text>
+      <View>
+        <Button title="Selection" onPress={() => Haptics.selectionAsync()} />
+      </View>
+      <Text>Haptics.notificationAsync</Text>
+      <View>
+        <Button
+          title="Success"
+          onPress={() =>
+            Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success)
+          }
+        />
+        <Button
+          title="Error"
+          onPress={() =>
+            Haptics.notificationAsync(Haptics.NotificationFeedbackType.Error)
+          }
+        />
+        <Button
+          title="Warning"
+          onPress={() =>
+            Haptics.notificationAsync(Haptics.NotificationFeedbackType.Warning)
+          }
+        />
+      </View>
+      <Text>Haptics.impactAsync</Text>
+      <View>
+        <Button
+          title="Light"
+          onPress={() => Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light)}
+        />
+        <Button
+          title="Medium"
+          onPress={() =>
+            Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium)
+          }
+        />
+        <Button
+          title="Heavy"
+          onPress={() => Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Heavy)}
+        />
+        <Button
+          title="Rigid"
+          onPress={() => Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Rigid)}
+        />
+        <Button
+          title="Soft"
+          onPress={() => Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Soft)}
+        />
+      </View>
+    </View>
+  );
+};
+
+// IMAGE PICKER
+const ImagePickerComponent = () => {
+  const [image, setImage] = useState(null);
+
+  const pickImage = async () => {
+    // No permissions request is necessary for launching the image library
+    let result = await ImagePicker.launchImageLibraryAsync({
+      mediaTypes: ImagePicker.MediaTypeOptions.All,
+      allowsEditing: true,
+      aspect: [4, 3],
+      quality: 1,
+    });
+
+    console.log(result);
+
+    if (!result.canceled) {
+      setImage(result.assets[0].uri);
+    }
+  };
+
+  return (
+    <View style={styles.view}>
+      <Text style={styles.title}>Image Picker:</Text>
+      <Button title="Pick an image from camera roll" onPress={pickImage} />
+      {image && <Image source={{ uri: image }} style={styles.image} />}
+    </View>
+  );
+};
+
 // DATE TIME PICKER
 const DateTimePickerComponent = () => {
   const [date, setDate] = useState(new Date()); // Initialize with the current date
@@ -388,6 +767,7 @@ const DateTimePickerComponent = () => {
 
   return (
     <>
+      <Text style={styles.title}>Date Time Picker:</Text>
       <Button title="Show Date Picker" onPress={() => setShowPicker(true)} />
       {showPicker && (
         <DateTimePicker
@@ -425,6 +805,7 @@ const CryptoComponent = () => {
 
   return (
     <View style={{ flex: 1, justifyContent: "center", alignItems: "center" }}>
+      <Text style={styles.title}>Crypto (Hashing):</Text>
       <TextInput
         style={{
           height: 40,
@@ -480,6 +861,7 @@ const ClipBoard = () => {
 
   return (
     <View>
+      <Text style={styles.title}>Clipboard:</Text>
       <TextInput
         value={copiedText}
         onChangeText={(text) => setCopiedText(text)}
@@ -519,6 +901,10 @@ async function createCalendar() {
 }
 
 const styles = StyleSheet.create({
+  page: {
+    justifyContent: "center",
+    alignItems: "center",
+  },
   scrollView: {
     display: "flex",
     flexDirection: "column",
