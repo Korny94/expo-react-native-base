@@ -1,4 +1,6 @@
 import React, { useState, useEffect } from "react";
+const EXPO_PUBLIC_TEST = process.env.EXPO_PUBLIC_TEST;
+
 import {
   View,
   Text,
@@ -250,6 +252,7 @@ export default function TabTwoScreen() {
         );
         console.log("Here are all your calendars:");
         console.log({ calendars });
+        console.log(EXPO_PUBLIC_TEST);
       }
     })();
   }, []);
@@ -285,6 +288,8 @@ export default function TabTwoScreen() {
       style={styles.scrollView}
       contentContainerStyle={{ alignItems: "center" }}
     >
+      <DotEnvComponent />
+
       <View style={styles.view}>
         <Text style={styles.title}>Accelerometer:</Text>
         <TouchableOpacity
@@ -411,6 +416,16 @@ export default function TabTwoScreen() {
     </ScrollView>
   );
 }
+
+// DOTENV
+const DotEnvComponent = () => {
+  return (
+    <View style={styles.view}>
+      <Text style={styles.title}>DotEnv:</Text>
+      <Text>{EXPO_PUBLIC_TEST}</Text>
+    </View>
+  );
+};
 
 // PAGER VIEW
 const PagerViewComponent = () => {
