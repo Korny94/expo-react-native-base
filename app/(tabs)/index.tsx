@@ -22,7 +22,7 @@ import {
 } from "native-base";
 import { MaterialIcons } from "@expo/vector-icons";
 
-export default function TabOneScreen() {
+export default function loginRegister() {
   const [activeTab, setActiveTab] = React.useState("login"); // 'login' or 'register'
 
   const handleTabPress = (tab) => {
@@ -80,6 +80,7 @@ const styles = StyleSheet.create({
     alignItems: "center",
     justifyContent: "center",
     flexDirection: "row",
+    gap: 5,
   },
   title: {
     fontSize: wp("7.5%"),
